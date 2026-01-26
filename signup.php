@@ -6,41 +6,31 @@ $error = "";
 $success = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
     $username = trim($_POST['username'] ?? '');
-    $email    = trim($_POST['email'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
     if ($username === '' || $email === '' || $password === '') {
         $error = "All fields are required.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = "Invalid email address.";
     } else {
+        try {
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+            $stmt->execute([$username]);
 
-        $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
-        $stmt->execute([$username]);
-        if ($stmt->fetch()) {
-            $error = "Username already taken.";
-        }
-
-        if (!$error) {
-            $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-            $stmt->execute([$email]);
             if ($stmt->fetch()) {
-                $error = "Email already registered.";
+                $error = "Username already exists.";
+            } else {
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+
+                $stmt = $pdo->prepare(
+                    "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)"
+                );
+                $stmt->execute([$username, $email, $hash]);
+
+                $success = "Account created successfully.";
             }
-        }
-
-        if (!$error) {
-            $hashed = password_hash($password, PASSWORD_DEFAULT);
-
-            $stmt = $pdo->prepare(
-                "INSERT INTO users (username, email, password)
-                 VALUES (?, ?, ?)"
-            );
-            $stmt->execute([$username, $email, $hashed]);
-
-            $success = "Account created successfully. You may now log in.";
+        } catch (Exception $e) {
+            $error = "Signup failed.";
         }
     }
 }
@@ -49,40 +39,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register</title>
+    <title>Sign Up</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="diary-page">
+<body>
 
-<div class="diary-container">
-    <h2>Create Account</h2>
+<div class="login-box">
+    <h2>Sign Up</h2>
 
     <?php if ($error): ?>
-        <p class="error-msg"><?= htmlspecialchars($error) ?></p>
+        <p class="error"><?= htmlspecialchars($error) ?></p>
     <?php endif; ?>
 
     <?php if ($success): ?>
-        <p class="success-msg"><?= htmlspecialchars($success) ?></p>
+        <p style="color:green;margin-bottom:15px;">
+            <?= htmlspecialchars($success) ?>
+        </p>
+        <a href="index.php" class="btn">Back to Login</a>
+    <?php else: ?>
+        <form method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Create Account</button>
+        </form>
+
+        <a href="index.php" class="btn" style="background:#eee;color:#333;">
+            Back to Login
+        </a>
     <?php endif; ?>
-
-    <form method="POST">
-
-        <label>Username</label>
-        <input type="text" name="username" required>
-
-        <label>Email</label>
-        <input type="email" name="email" required>
-
-        <label>Password</label>
-        <input type="password" name="password" required>
-
-        <button type="submit" class="btn">Register</button>
-    </form>
-
-    <p style="margin-top:15px;text-align:center;">
-        Already have an account?
-        <a href="index.php">Login</a>
-    </p>
 </div>
 
 </body>

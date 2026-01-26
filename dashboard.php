@@ -12,12 +12,13 @@ if ($maintenance && ($_SESSION['role'] ?? '') !== 'admin') {
     exit("Site under maintenance");
 }
 
-$stmt = $pdo->prepare("SELECT display_name, photo FROM profiles WHERE user_id = ?");
+$stmt = $pdo->prepare("SELECT photo FROM profiles WHERE user_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $profile = $stmt->fetch();
 
-$display_name = $profile['display_name'] ?? $_SESSION['user'];
+$display_name = $_SESSION['user'];
 $photo = $profile['photo'] ?? 'default-avatar.png';
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
