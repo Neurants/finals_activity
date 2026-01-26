@@ -76,7 +76,9 @@ try {
     <title>Gallery</title>
     <link rel="stylesheet" href="style.css?ver=2.0">
 </head>
-<body class="diary-page">
+
+<!-- ✅ FIXED BODY CLASS -->
+<body class="gallery-page">
 
 <?php include "menu.php"; ?>
 

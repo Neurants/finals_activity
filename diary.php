@@ -10,7 +10,28 @@ if (!isset($_SESSION['user_id'])) {
 $success = "";
 $error = "";
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['entry'])) {
+if (isset($_GET['delete'])) {
+    $id = (int)$_GET['delete'];
+    $stmt = $pdo->prepare("DELETE FROM diary_entries WHERE id = ? AND user_id = ?");
+    $stmt->execute([$id, $_SESSION['user_id']]);
+    $success = "Diary entry deleted.";
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
+    $id = (int)$_POST['id'];
+    $title = trim($_POST['title']) ?: 'Untitled';
+    $content = trim($_POST['entry']);
+
+    if ($content) {
+        $stmt = $pdo->prepare("UPDATE diary_entries SET title = ?, content = ? WHERE id = ? AND user_id = ?");
+        $stmt->execute([$title, $content, $id, $_SESSION['user_id']]);
+        $success = "Diary entry updated!";
+    } else {
+        $error = "Entry content cannot be empty.";
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['entry']) && !isset($_POST['update'])) {
     $title = trim($_POST['title']) ?: 'Untitled';
     $content = trim($_POST['entry']);
 
@@ -59,7 +80,21 @@ $entries = $stmt->fetchAll();
             <?php foreach ($entries as $note): ?>
                 <details class="note">
                     <summary><?= htmlspecialchars($note['title']) ?></summary>
+
                     <p><?= nl2br(htmlspecialchars($note['content'])) ?></p>
+
+                    <form method="POST" class="edit-form">
+                        <input type="hidden" name="id" value="<?= $note['id'] ?>">
+                        <input type="text" name="title" value="<?= htmlspecialchars($note['title']) ?>">
+                        <textarea name="entry"><?= htmlspecialchars($note['content']) ?></textarea>
+                        <button type="submit" name="update">Update</button>
+                    </form>
+
+                    <a href="?delete=<?= $note['id'] ?>" 
+                       onclick="return confirm('Delete this entry?')" 
+                       class="delete-btn">
+                       🗑 Delete
+                    </a>
                 </details>
             <?php endforeach; ?>
         <?php endif; ?>

@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Profile</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="diary-page">
+<body class="profile-page">
 
 <?php include "menu.php"; ?>
 

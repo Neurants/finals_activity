@@ -164,15 +164,18 @@ button:hover,
     display: block;
 }
 
-/* ---------------- DIARY & PROFILE PAGES ---------------- */
+/* ---------------- DIARY PAGE ---------------- */
 body.diary-page {
     font-family: 'Georgia', serif;
-    background: #f4f1e3;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding-top: 100px;
     min-height: 100vh;
+    background-image: url("https://th.bing.com/th/id/OIG2.Kwh72XlSs.oA8qVjDnot?r=0&o=5&dpr=1.3&pid=ImgGn");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .diary-container {
@@ -228,6 +231,14 @@ details.note summary {
     font-size: 16px;
 }
 
+/* ---------------- PROFILE PAGE ---------------- */
+body.profile-page {
+    background-image: url("https://th.bing.com/th/id/OIG2.GRLp172gF5EjK83rmBXE?r=0&o=5&dpr=1.3&pid=ImgGn");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 .profile-pic {
     width: 150px;
     height: 150px;
@@ -238,7 +249,14 @@ details.note summary {
     margin-bottom: 15px;
 }
 
-/* ---------------- GALLERY ---------------- */
+/* ---------------- GALLERY PAGE ---------------- */
+body.gallery-page {
+    background-image: url("https://th.bing.com/th/id/OIG2.K6_7LOOLGZya4OwuWeX4?r=0&o=5&dpr=1.3&pid=ImgGn");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 .page-title {
     text-align: center;
     font-size: 28px;
