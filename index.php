@@ -7,36 +7,37 @@ $error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    if (
-        !isset($_POST['csrf_token']) ||
-        !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
-    ) {
-        exit("Invalid CSRF token");
+    if (!csrf_validate($_POST['csrf_token'] ?? '')) {
+        die("Invalid CSRF token");
     }
 
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-    $stmt = $pdo->prepare(
-        "SELECT id, username, password_hash, role, status FROM users WHERE username = ? LIMIT 1"
-    );
-    $stmt->execute([$username]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($user && password_verify($password, $user['password_hash'])) {
-        session_regenerate_id(true);
-
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user'] = $user['username'];
-        $_SESSION['role'] = $user['role'];
-
-        header("Location: dashboard.php");
-        exit();
+    if ($username === '' || $password === '') {
+        $error = "All fields are required";
     } else {
-        $error = "Invalid username or password.";
+        $stmt = $pdo->prepare(
+            "SELECT id, username, password_hash, role, status 
+             FROM users WHERE username = ? LIMIT 1"
+        );
+        $stmt->execute([$username]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user && $user['status'] === 'active' && password_verify($password, $user['password_hash'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user'] = $user['username'];
+            $_SESSION['role'] = $user['role'];
+
+            header("Location: dashboard.php");
+            exit();
+        } else {
+            $error = "Invalid credentials or account suspended";
+        }
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Login</title>
     <link rel="stylesheet" href="style.css">
 </head>
+<body>
 
 <div class="login-box">
     <h2>Login</h2>
@@ -53,13 +55,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form method="POST">
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+
+        <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            required
+        >
+
+        <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            required
+        >
+
         <button type="submit">Login</button>
     </form>
 
-    <p style="margin-top:15px;">Don't have an account? <a href="signup.php">Sign Up here</a></p>
+    <p style="margin-top:15px;">
+        <a href="signup.php">Create an account</a>
+    </p>
 </div>
 
 </body>
